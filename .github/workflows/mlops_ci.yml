@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 1. Kloning Repositori Source Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 2. Konfigurasi Lingkungan Python 3.12
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -33,7 +33,7 @@ jobs:
           mlflow run . 
 
       - name: 6. Pencadangan Artefak Model ke GitHub
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: model-artefak-lokal
           path: local_model_dir/

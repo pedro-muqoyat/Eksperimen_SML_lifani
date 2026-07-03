@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1uA2v-Q7dOCowo4KmIM5p9uzEHKBZPkLq
 """
 
-!pip install mlflow dagshub scikit-learn pandas numpy matplotlib seaborn joblib
-
 import mlflow
 import mlflow.sklearn
 import dagshub

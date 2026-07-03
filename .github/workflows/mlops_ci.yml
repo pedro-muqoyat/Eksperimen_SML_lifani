@@ -29,8 +29,9 @@ jobs:
           MLFLOW_TRACKING_URI: https://dagshub.com/pedro-muqoyat/Eksperimen_SML_lifani.mlflow
           MLFLOW_TRACKING_USERNAME: pedro-muqoyat
           MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # Baris ini memblokir kegagalan autentikasi DagsHub
         run: |
-          mlflow run . 
+          mlflow run .
 
       - name: 6. Pencadangan Artefak Model ke GitHub
         uses: actions/upload-artifact@v4

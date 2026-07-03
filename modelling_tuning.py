@@ -21,48 +21,43 @@ from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Kredensial Autentikasi Infrastruktur
 DAGSHUB_USERNAME = "pedro-muqoyat"
 DAGSHUB_REPO = "Eksperimen_SML_lifani"
 
-# Direktori diset kosong (relatif) agar kompatibel dengan server GitHub
-WORKSPACE_PATH = ""
+# Deteksi otomatis jalur absolut server GitHub Actions
+WORKSPACE = os.getenv("GITHUB_WORKSPACE", ".")
 
 def train_and_log_model():
     print("Memuat matriks data siap latih...")
-    data_path = WORKSPACE_PATH + "data_siap_latih.pkl"
+    data_path = os.path.join(WORKSPACE, "data_siap_latih.pkl")
     X_train_scaled, X_test_scaled, y_train, y_test, encoder = joblib.load(data_path)
-
-    # Inisialisasi Koneksi Remote Server
+    
     dagshub.init(repo_owner=DAGSHUB_USERNAME, repo_name=DAGSHUB_REPO, mlflow=True)
     mlflow.set_tracking_uri(f"https://dagshub.com/{DAGSHUB_USERNAME}/{DAGSHUB_REPO}.mlflow")
     mlflow.set_experiment("Eksperimen_Prediksi_Status_Akademik")
-
+    
     base_model = RandomForestClassifier(random_state=42)
     param_space = {
         'n_estimators': [50, 100],
         'max_depth': [10, None],
-        'class_weight': ['balanced']
+        'class_weight': ['balanced'] 
     }
     grid_search = GridSearchCV(estimator=base_model, param_grid=param_space, cv=3, scoring='accuracy', n_jobs=-1)
-
+    
     with mlflow.start_run(run_name="Eksperimen_RandomForest_V2"):
-        print("Mengeksekusi siklus komputasi model...")
         grid_search.fit(X_train_scaled, y_train)
-
+        
         best_model = grid_search.best_estimator_
         predictions = best_model.predict(X_test_scaled)
-
+        
         final_accuracy = accuracy_score(y_test, predictions)
         final_f1 = f1_score(y_test, predictions, average='weighted')
-
-        # Pencatatan Parameter dan Metrik
+        
         mlflow.log_params(grid_search.best_params_)
         mlflow.log_metric("akurasi_pengujian", final_accuracy)
         mlflow.log_metric("f1_score_bobot", final_f1)
         mlflow.sklearn.log_model(best_model, "model_klasifikasi_mahasiswa")
-
-        # Pembuatan & Pengiriman Artefak Tambahan
+        
         cm = confusion_matrix(y_test, predictions)
         plt.figure(figsize=(6, 4))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Oranges',
@@ -70,24 +65,20 @@ def train_and_log_model():
         plt.title('Matriks Evaluasi Prediksi Model')
         plt.ylabel('Status Aktual')
         plt.xlabel('Hasil Prediksi')
-
-        graph_filename = WORKSPACE_PATH + "evaluasi_confusion_matrix.png"
+        
+        # Ekspor artefak visual ke ruang kerja absolut
+        graph_filename = os.path.join(WORKSPACE, "evaluasi_confusion_matrix.png")
         plt.savefig(graph_filename, bbox_inches='tight')
-
-        # LOGGING ARTEFAK VISUAL KE DAGSHUB
         mlflow.log_artifact(graph_filename)
         plt.close()
 
-        # PENYIMPANAN MODEL LOKAL UNTUK DOCKER (Ditambahkan)
-        local_model_dir = "local_model_dir"
+        # Ekspor arsitektur model lokal ke ruang kerja absolut untuk dibungkus Docker
+        local_model_dir = os.path.join(WORKSPACE, "local_model_dir")
         if os.path.exists(local_model_dir):
             shutil.rmtree(local_model_dir)
         mlflow.sklearn.save_model(best_model, local_model_dir)
-        print(f"Arsitektur model disimpan secara lokal di direktori: {local_model_dir}")
-
+        
         print("\nSiklus Pelatihan Selesai.")
-        print(f"Kombinasi Parameter Optimal: {grid_search.best_params_}")
-        print(f"Akurasi Akhir: {final_accuracy:.4f}")
 
 if __name__ == "__main__":
     train_and_log_model()

@@ -1,0 +1,14 @@
+name: env_mlops_mahasiswa
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - pandas
+    - scikit-learn
+    - mlflow
+    - dagshub
+    - joblib
+    - matplotlib
+    - seaborn

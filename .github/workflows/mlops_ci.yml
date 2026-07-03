@@ -22,7 +22,7 @@ jobs:
           pip install mlflow dagshub pandas scikit-learn matplotlib seaborn joblib
 
       - name: 4. Eksekusi Skrip Preprocessing Data (Kriteria 1)
-        run: python pedro.py
+        run: python lifani.py
 
       - name: 5. Eksekusi Pelatihan Terisolasi via MLproject (Kriteria 2 & 3)
         env:

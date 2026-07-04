@@ -1,0 +1,51 @@
+name: MLOps Training & Dockerization Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Kloning Repositori Source Code
+        uses: actions/checkout@v4
+
+      - name: 2. Konfigurasi Lingkungan Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 3. Pemasangan Pustaka Inti
+        run: |
+          pip install mlflow dagshub pandas scikit-learn matplotlib seaborn joblib
+
+      - name: 4. Eksekusi Skrip Preprocessing Data (Kriteria 1)
+        run: python lifani.py
+
+      - name: 5. Eksekusi Pelatihan Terisolasi via MLproject (Kriteria 2 & 3)
+        env:
+          MLFLOW_TRACKING_URI: https://dagshub.com/pedro-muqoyat/Eksperimen_SML_lifani.mlflow
+          MLFLOW_TRACKING_USERNAME: pedro-muqoyat
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USER_TOKEN: ${{ secrets.DAGSHUB_TOKEN }} # Baris ini memblokir kegagalan autentikasi DagsHub
+        run: |
+          mlflow run . --env-manager=local
+
+      - name: 6. Pencadangan Artefak Model ke GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-artefak-lokal
+          path: local_model_dir/
+
+      - name: 7. Autentikasi Sistem Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 8. Dockerisasi dan Pengiriman Container ke Docker Hub (Kriteria 3 Advanced)
+        run: |
+          mlflow models build-docker -m local_model_dir -n ${{ secrets.DOCKER_USERNAME }}/klasifikasi-mahasiswa:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/klasifikasi-mahasiswa:latest

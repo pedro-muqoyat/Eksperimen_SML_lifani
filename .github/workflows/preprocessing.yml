@@ -2,10 +2,8 @@ name: Data Preprocessing Pipeline
 
 on:
   push:
-    paths:
-      - "dataset.csv"
-      - "preprocessing/automate_lifani.py"
-      - ".github/workflows/preprocessing.yml"
+    branches:
+      - main # (Atau ganti 'master' jika branch Anda bernama master)
 
 jobs:
   process-data:
@@ -24,8 +22,6 @@ jobs:
         run: |
           pip install pandas scikit-learn
 
-      - name: 4. Eksekusi Skrip Otomatisasi (Bypass Interaksi Manual)
+      - name: 4. Eksekusi Skrip Otomatisasi
         run: |
-          # Perintah ini akan menjalankan skrip Kriteria 1 Anda
-          # dan memastikan tidak ada error pada arsitektur pipeline data
           python preprocessing/automate_lifani.py

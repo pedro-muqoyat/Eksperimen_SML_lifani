@@ -42,7 +42,7 @@ def build_preprocessing_pipeline(numeric_features: list, categorical_features: l
 
 def run_automation():
     """Fungsi eksekusi alur otomatisasi data prep."""
-    raw_data_path = "../dataset.csv"
+    raw_data_path = "dataset.csv"
     output_dir = "../preprocessing"
     output_path = os.path.join(output_dir, "data_bersih.csv")
 

@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "dataset.csv"
-      - "preprocessing/automate_*.py"
+      - "preprocessing/automate_lifani.py"
       - ".github/workflows/preprocessing.yml"
 
 jobs:
@@ -28,4 +28,4 @@ jobs:
         run: |
           # Perintah ini akan menjalankan skrip Kriteria 1 Anda
           # dan memastikan tidak ada error pada arsitektur pipeline data
-          python preprocessing/automate_Nama-siswa.py
+          python preprocessing/automate_lifani.py
